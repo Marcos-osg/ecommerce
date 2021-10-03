@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from store.models import Customer,ShippingAdress,OrderItem,Order,Product
 import json
+import datetime
 from django.http import JsonResponse
 
 
@@ -76,4 +77,29 @@ def updateItem(request):
     return JsonResponse('Item was added', safe=False)
 
 def processOrder(request):
+    transaction_id = datetime.datetime.now().timestamp()
+    data = json.loads(request.body)
+
+    if request.user.is_authenticated:
+        customer = request.user.customer
+        order, created = Order.objects.get_or_create(customer=customer, complete=False)
+        total = float(data['form']['total'].replace(',','.'))
+        order.transaction_id = transaction_id
+
+        if total == order.get_cart_total:
+            order.complete = True
+            order.save()
+        
+        if order.shipping == True:
+            ShippingAdress.objects.create(
+                customer = customer,
+                order = order,
+                adress = data['shipping']['adress'],
+                city = data['shipping']['city'],
+                state = data['shipping']['state'],
+                zipcode = data['shipping']['zipcode'],
+            )
+
+    else:
+        print('User is not logged in')
     return JsonResponse('payment complete..', safe=False)
