@@ -13,10 +13,10 @@ def store(request):
     else:
         items = []
         order = {'get_cart_total':0, 'get_total_items':0}
-        cartItems = order['get_cart_items']
+        cartItems = order['get_total_items']
 
     product = Product.objects.all()
-    context = {'products':product, 'cartItems':cartItems}
+    context = {'products':product, 'cartItems':cartItems, 'shipping':False}
 
     return render(request,'store/store.html', context)
 
@@ -29,9 +29,9 @@ def cart(request):
     else:
         items = []
         order = {'get_cart_total':0, 'get_total_items':0}
-        cartItems = order['get_cart_items']
+        cartItems = order['get_total_items']
 
-    context = {'items':items, 'order':order, 'cartItems':cartItems}
+    context = {'items':items, 'order':order, 'cartItems':cartItems, 'shipping':False}
     return render(request,'store/cart.html', context)
 
 def checkout(request):
@@ -42,8 +42,8 @@ def checkout(request):
         cartItems = order.get_cart_items
     else:
         items = []
-        order = {'get_cart_total':0, 'get_total_items':0}
-        cartItems = order['get_cart_items']
+        order = {'get_cart_total':0, 'get_total_items':0, 'shipping':False}
+        cartItems = order['get_total_items']
 
     context = {'items':items, 'order':order, 'cartItems':cartItems}
     return render(request,'store/checkout.html', context)
@@ -74,3 +74,6 @@ def updateItem(request):
         orderItem.delete()
 
     return JsonResponse('Item was added', safe=False)
+
+def processOrder(request):
+    return JsonResponse('payment complete..', safe=False)
