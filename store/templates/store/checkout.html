@@ -122,21 +122,27 @@
             userFormData.email = form.email.value
         }
 
-        var url = '/process_order/'
-        fetch(url,{
+        var url = "/process_order/"
+        fetch(url, {
             method:'POST',
             headers:{
-                'Content-Type':'application/json',
+                'Content-Type':'applicaiton/json',
                 'X-CSRFToken':csrftoken,
-            },
-            body:JSON.stringify({'form':userFormData, 'shipping': shippingInfo})
+            }, 
+            body:JSON.stringify({'form':userFormData, 'shipping':shippingInfo}),
+            
         })
         .then((response) => response.json())
         .then((data) => {
             console.log('Success:', data);
-            alert('Transaction Completed');
+            alert('Transaction completed');  
+
+            cart = {}
+            document.cookie ='cart=' + JSON.stringify(cart) + ";domain=;path=/"
+
             window.location.href = "{% url 'store' %}"
-        })
+
+            })
     }
 
 </script>
