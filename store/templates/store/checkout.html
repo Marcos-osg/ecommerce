@@ -39,7 +39,7 @@
         <br>
         <div class="box-element hidden" id="payment-info">
             <small>Paypal Options</small>
-            <button id="make-payment">Make payment</button>
+            <!-- <button id="make-payment">Make payment</button> -->
             <div id="paypal-button-container"></div>
         </div>
         
@@ -64,7 +64,82 @@
         </div>
     </div>
 </div>
+<script src="https://www.paypal.com/sdk/js?client-id=test&currency=USD"></script>
+
+
+<script>
+    var total = '{{order.get_cart_total|floatformat:2}}'
+    // Render the PayPal button into #paypal-button-container
+    paypal.Buttons({
+
+        // Set up the transaction
+        createOrder: function(data, actions) {
+            return actions.order.create({
+                purchase_units: [{
+                    amount: {
+                        value: parseFloat(total).toFixed(2)
+                    }
+                }]
+            });
+        },
+    
+
+        // Finalize the transaction
+        onApprove: function(data, actions) {
+            return actions.order.capture().then(function(orderData) {
+                // Successful capture! For demo purposes:
+                var orderID = '{{order.transaction_id}}'
+                var shipping = '{{order.shipping}}'
+                var userFormData = {
+                    'name':null,
+                    'email':null,
+                    'total':total,
+                }
+                var shippingInfo = {
+                    'adress':null,
+                    'city':null,
+                    'state':null,
+                    'zipcode':null,
+                }              
+                if(shipping != 'False'){
+                    shippingInfo.adress = form.adress.value
+                    shippingInfo.city = form.city.value
+                    shippingInfo.state = form.state.value
+                    shippingInfo.zipcode = form.zipcode.value
+                }
+
+                if(user == 'AnonymousUser'){
+                    userFormData.name = form.name.value
+                    userFormData.email = form.email.value
+                }
+
+                var url = "/process_order/"
+                fetch(url, {
+                    method:'POST',
+                    headers:{
+                        'Content-Type':'applicaiton/json',
+                        'X-CSRFToken':csrftoken,
+                    }, 
+                    body:JSON.stringify({'form':userFormData, 'shipping':shippingInfo,'transactionID': orderData.id}),
+                    
+                })
+                cart = {}
+                document.cookie ='cart=' + JSON.stringify(cart) + ";domain=;path=/"
+                window.location.href = "{% url 'order-status' %}"
+                // Replace the above to show a success message within this page, e.g.
+                // const element = document.getElementById('paypal-button-container');
+                // element.innerHTML = '';
+                // element.innerHTML = '<h3>Thank you for your payment!</h3>';
+                // Or go to another URL:  actions.redirect('thank_you.html');
+            });
+        }
+
+
+    }).render('#paypal-button-container');
+</script>
+
 <script type="text/javascript">
+    var orderID = '{{order.transaction_id}}'
     var shipping = '{{order.shipping}}'
     var total = '{{order.get_cart_total|floatformat:2}}'
 
@@ -91,7 +166,7 @@
         document.getElementById('form-button').classList.add('hidden')
         document.getElementById('payment-info').classList.remove('hidden')
     })
-
+    /*
     document.getElementById('make-payment').addEventListener('click', function(e){
         submitFormData()
     })
@@ -110,6 +185,7 @@
             'state':null,
             'zipcode':null,
         }
+        
         if(shipping != 'False'){
             shippingInfo.adress = form.adress.value
             shippingInfo.city = form.city.value
@@ -129,21 +205,23 @@
                 'Content-Type':'applicaiton/json',
                 'X-CSRFToken':csrftoken,
             }, 
-            body:JSON.stringify({'form':userFormData, 'shipping':shippingInfo}),
+            body:JSON.stringify({'form':userFormData, 'shipping':shippingInfo,'transactionID': orderID}),
             
         })
         .then((response) => response.json())
         .then((data) => {
-            console.log('Success:', data);
-            alert('Transaction completed');  
+            console.log('Success:', data);    
+
+            alert('Success, you has redirected for home')
 
             cart = {}
             document.cookie ='cart=' + JSON.stringify(cart) + ";domain=;path=/"
 
             window.location.href = "{% url 'store' %}"
-
-            })
+            
+        })
     }
+    */
 
 </script>
 {% endblock %}

@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from store.models import Customer,ShippingAdress,OrderItem,Order,Product
 import json
 import datetime
@@ -62,8 +62,8 @@ def updateItem(request):
     return JsonResponse('Item was added', safe=False)
 
 def processOrder(request):
-    transaction_id = datetime.datetime.now().timestamp()
     data = json.loads(request.body)
+    transaction_id = data['transactionID']
 
     if request.user.is_authenticated:
         customer = request.user.customer
@@ -88,4 +88,22 @@ def processOrder(request):
             zipcode = data['shipping']['zipcode'],
         )
 
+    print('Captura:',data)
     return JsonResponse('payment complete..', safe=False)
+
+def status_order(request):
+    data = cartData(request)
+    cartItems = data['cartItems']
+    order = data['order']
+    items = data['items']
+    context = {'items':items, 'order':order, 'cartItems':cartItems}
+    return render(request,'store/order_status.html',context)
+
+""" 
+gambiarra
+def atualiza(request,id):
+    idt = Order.objects.get(transaction_id=id)
+    url = 'https://api-m.sandbox.paypal.com/v2/checkout/orders/{idt}'
+    response = url.json()
+    print('status do pedido:',response)
+    return response """
