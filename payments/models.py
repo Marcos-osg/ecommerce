@@ -1,11 +1,10 @@
 from django.db import models
-from model_utils.models import TimeStampedModel
 
-from store.models import Order
+from store.models import ShippingAdress
 
 
-class Payment(TimeStampedModel):
-    order = models.ForeignKey(Order, related_name="payments", on_delete=models.CASCADE)
+class Payment(models.Model):
+    order = models.ForeignKey(ShippingAdress, related_name="payments", on_delete=models.CASCADE)
     transaction_amount = models.DecimalField(
         "Valor da Transação", max_digits=10, decimal_places=2
     )
@@ -16,8 +15,6 @@ class Payment(TimeStampedModel):
     mercado_pago_status = models.CharField(max_length=250, blank=True)
     mercado_pago_status_detail = models.CharField(max_length=250, blank=True)
 
-    class Meta:
-        ordering = ("-modified",)
 
     def __str__(self):
         return f"Pagamento {self.id}"
