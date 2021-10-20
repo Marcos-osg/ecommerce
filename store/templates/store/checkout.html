@@ -74,7 +74,9 @@
                 <div class="form-group">
                     <select class="form-control" name="installments" id="form-checkout__installments"></select>                    
                 </div>
-                <button class="btn btn-success btn-block" type="submit" id="form-checkout__submit" >Pagar</button>
+                <a href=" {% url 'process-payment' %}">
+                    <button class="btn btn-success btn-block" type="submit" id="form-checkout__submit" >Pagar</button>
+                </a>
                 <progress value="0" class="progress-bar">Carregando...</progress>
             </form>
             <!-- <button id="make-payment">Make payment</button> -->
@@ -111,12 +113,12 @@
     var orderID = '{{order.transaction_id}}'
     var shipping = '{{order.shipping}}'
     var total_compra = '{{order.get_cart_total|floatformat:2}}'
-    const mp = new MercadoPago('');
+    const mp = new MercadoPago('publickey');
 
     /* mercado pago */
     // Step #3
     const cardForm = mp.cardForm({
-    amount:parseFloat(total_compra).toFixed(2),
+    amount:"100",
     autoMount: true,
     form: {
         id: "form-checkout",
@@ -180,10 +182,11 @@
             identificationType,
         } = cardForm.getCardFormData();
 
-        fetch("/process_payment", {
+        fetch("/process_payment/", {
             method: "POST",
             headers: {
             "Content-Type": "application/json",
+            "X-CSRFToken":csrftoken,
             },
             body: JSON.stringify({
             token,

@@ -4,6 +4,7 @@ import json
 import datetime
 from django.http import JsonResponse
 from . utils import cookieCart, cartData, guestOrder
+import mercadopago
 
 
 def store(request):
@@ -71,7 +72,7 @@ def processOrder(request):
               
     else:
         customer, order = guestOrder(request, data)
-    total = float(data['form']['total'].replace(',','.'))
+    total = float(data['form']['total'])
     order.transaction_id = transaction_id
 
     if total == order.get_cart_total:
@@ -99,11 +100,22 @@ def status_order(request):
     context = {'items':items, 'order':order, 'cartItems':cartItems}
     return render(request,'store/order_status.html',context)
 
-""" 
-gambiarra
-def atualiza(request,id):
-    idt = Order.objects.get(transaction_id=id)
-    url = 'https://api-m.sandbox.paypal.com/v2/checkout/orders/{idt}'
-    response = url.json()
-    print('status do pedido:',response)
-    return response """
+def process_payment(request):
+    sdk = mercadopago.SDK("acesstoken")
+    data = json.loads(request.body)
+
+    payment_data = {
+        "transaction_amount": 100,
+        "token": data['token'],
+        "description": data['description'],
+        "payment_method_id": data['payment_method_id'],
+        "installments": data['installments'],
+        "payer": {
+            "email": data['payer']['email']
+        }
+    }
+    result = sdk.payment().create(payment_data)
+    payment = result["response"]
+
+    print(payment)
+    

@@ -11,4 +11,5 @@ urlpatterns = [
     path('process_order/', views.processOrder, name='process-order'),
     path('status_order/', views.status_order, name='order-status'),
     #path('att_order/?P<id>[0-9]+', views.atualiza, name='order-atualiza'),
+    path('process_payment/', views.process_payment, name='process-payment'),
 ]
