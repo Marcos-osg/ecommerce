@@ -1,7 +1,8 @@
+from django.http.response import HttpResponse
 from django.shortcuts import redirect, render
-from store.models import Customer,ShippingAdress,OrderItem,Order,Product
+from store.models import Customer, Payment,ShippingAdress,OrderItem,Order,Product
 import json
-import datetime
+from django.conf import settings
 from django.http import JsonResponse
 from . utils import cookieCart, cartData, guestOrder
 import mercadopago
@@ -101,11 +102,11 @@ def status_order(request):
     return render(request,'store/order_status.html',context)
 
 def process_payment(request):
-    sdk = mercadopago.SDK("acesstoken")
+    sdk = mercadopago.SDK(settings.MERCADO_PAGO_ACCESS_TOKEN)
     data = json.loads(request.body)
 
     payment_data = {
-        "transaction_amount": 100,
+        "transaction_amount": data['transaction_amount'],
         "token": data['token'],
         "description": data['description'],
         "payment_method_id": data['payment_method_id'],
@@ -118,4 +119,16 @@ def process_payment(request):
     payment = result["response"]
 
     print(payment)
+    print(data)
+    Payment.objects.get_or_create( 
+        transaction_amount= data['transaction_amount'],
+        installments= data['installments'],
+        payment_method_id= data['payment_method_id'],
+        email= data['payer']['email'],
+        mercado_pago_id = payment['id'],
+        mercado_pago_status = payment['status'],
+        mercado_pago_status_detail = payment['status_detail'],
+    )
+
+    return HttpResponse(request, 'store/order_status.html')
     

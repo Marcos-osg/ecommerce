@@ -113,12 +113,12 @@
     var orderID = '{{order.transaction_id}}'
     var shipping = '{{order.shipping}}'
     var total_compra = '{{order.get_cart_total|floatformat:2}}'
-    const mp = new MercadoPago('publickey');
+    const mp = new MercadoPago('TEST-cb073ec4-b313-4e92-a6a1-0bfbfb0d6deb');
 
     /* mercado pago */
     // Step #3
     const cardForm = mp.cardForm({
-    amount:"100",
+    amount: parseFloat(total_compra).toFixed(2),
     autoMount: true,
     form: {
         id: "form-checkout",
